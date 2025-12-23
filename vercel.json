@@ -25,12 +25,6 @@
     }
   ],
   "env": {
-    "DATABASE_URL": "@database_url",
-    "XHS_API_URL": "https://your-xhs-api.herokuapp.com/xhs/detail"
-  },
-  "functions": {
-    "xhs-queue-server/server.py": {
-      "maxDuration": 30
-    }
+    "DATABASE_URL": "@database_url"
   }
 }

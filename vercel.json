@@ -1,0 +1,36 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "xhs-queue-server/server.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "xhs-queue-server/server.py"
+    },
+    {
+      "src": "/static/(.*)",
+      "dest": "xhs-queue-server/static/$1"
+    },
+    {
+      "src": "/dashboard",
+      "dest": "xhs-queue-server/static/dashboard.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "xhs-queue-server/static/index.html"
+    }
+  ],
+  "env": {
+    "DATABASE_URL": "@database_url",
+    "XHS_API_URL": "https://your-xhs-api.herokuapp.com/xhs/detail"
+  },
+  "functions": {
+    "xhs-queue-server/server.py": {
+      "maxDuration": 30
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "xhs-queue-manager",
+  "version": "1.0.0",
+  "description": "XHS Queue Manager - Xiaohongshu download queue management system",
+  "main": "xhs-queue-server/server.py",
+  "scripts": {
+    "dev": "cd xhs-queue-server && python server.py",
+    "start": "cd xhs-queue-server && python server.py",
+    "worker": "cd xhs-queue-server && python worker.py",
+    "build": "echo 'No build step required'",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "xiaohongshu",
+    "xhs",
+    "downloader",
+    "queue",
+    "fastapi",
+    "chrome-extension"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/xhs-queue-manager.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/xhs-queue-manager/issues"
+  },
+  "homepage": "https://github.com/yourusername/xhs-queue-manager#readme"
+}

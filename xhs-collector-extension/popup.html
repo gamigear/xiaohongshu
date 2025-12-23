@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { width: 380px; padding: 15px; font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #1a1a2e; color: #eee; }
+    h1 { font-size: 16px; margin-bottom: 12px; color: #ff6b6b; display: flex; align-items: center; gap: 8px; }
+    .btn { width: 100%; padding: 10px; margin: 5px 0; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s; }
+    .btn-primary { background: #ff6b6b; color: white; }
+    .btn-primary:hover { background: #ee5a5a; }
+    .btn-secondary { background: #4ecdc4; color: white; }
+    .btn-secondary:hover { background: #3dbdb5; }
+    .btn-danger { background: #95a5a6; color: white; }
+    .btn-danger:hover { background: #7f8c8d; }
+    .btn-row { display: flex; gap: 8px; }
+    .btn-row .btn { flex: 1; }
+    .status { padding: 8px; margin: 10px 0; border-radius: 6px; font-size: 12px; text-align: center; }
+    .status.success { background: rgba(78, 205, 196, 0.2); color: #4ecdc4; }
+    .status.error { background: rgba(255, 107, 107, 0.2); color: #ff6b6b; }
+    .status.info { background: rgba(116, 185, 255, 0.2); color: #74b9ff; }
+    .queue { margin-top: 12px; padding: 10px; background: #16213e; border-radius: 6px; max-height: 150px; overflow-y: auto; }
+    .queue h3 { font-size: 12px; color: #74b9ff; margin-bottom: 8px; }
+    .queue-item { font-size: 11px; padding: 6px 8px; margin: 4px 0; background: #1a1a2e; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+    .queue-item .url { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 8px; }
+    .queue-item .remove { color: #ff6b6b; cursor: pointer; font-size: 14px; }
+    .empty { color: #666; font-size: 11px; text-align: center; padding: 10px; }
+    .stats { display: flex; justify-content: space-between; margin: 10px 0; font-size: 11px; color: #888; }
+    .stats strong { color: #fff; }
+    .stats .error { color: #ff6b6b; }
+    .stats .done { color: #4ecdc4; }
+    .config { margin-top: 12px; padding: 10px; background: #16213e; border-radius: 6px; }
+    .config h3 { font-size: 12px; color: #74b9ff; margin-bottom: 8px; }
+    .config-item { margin: 8px 0; }
+    .config-item label { font-size: 11px; color: #ccc; display: block; margin-bottom: 4px; }
+    .config-item input { width: 100%; padding: 6px 8px; border: 1px solid #444; border-radius: 4px; background: #1a1a2e; color: #eee; font-size: 11px; }
+    .config-item input:focus { outline: none; border-color: #74b9ff; }
+    .tabs { display: flex; margin-bottom: 10px; }
+    .tab { flex: 1; padding: 8px; text-align: center; background: #16213e; border: none; color: #888; cursor: pointer; font-size: 12px; }
+    .tab.active { background: #ff6b6b; color: white; }
+    .tab:first-child { border-radius: 6px 0 0 6px; }
+    .tab:last-child { border-radius: 0 6px 6px 0; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+  </style>
+</head>
+<body>
+  <h1>🔖 XHS Collector</h1>
+  
+  <div class="tabs">
+    <button class="tab active" data-tab="queue">📋 Queue</button>
+    <button class="tab" data-tab="config">⚙️ Config</button>
+  </div>
+  
+  <div id="queueTab" class="tab-content active">
+    <div class="config-item">
+      <label>📁 Thư mục con:</label>
+      <input type="text" id="categoryInput" placeholder="default" style="margin-bottom: 8px;">
+    </div>
+    
+    <button id="addBtn" class="btn btn-primary">➕ Thêm link trang hiện tại</button>
+    
+    <div class="btn-row">
+      <button id="refreshBtn" class="btn btn-secondary">🔄 Refresh</button>
+      <button id="clearBtn" class="btn btn-danger">🗑️ Xóa pending</button>
+    </div>
+    
+    <div id="status" class="status" style="display:none;"></div>
+    
+    <div class="stats">
+      <span>⏳ Pending: <strong id="pendingCount">0</strong></span>
+      <span class="done">✅ Done: <strong id="doneCount">0</strong></span>
+      <span class="error">❌ Error: <strong id="errorCount">0</strong></span>
+    </div>
+    
+    <div class="queue">
+      <h3>📋 Hàng đợi (Pending)</h3>
+      <div id="queueList"><div class="empty">Đang tải...</div></div>
+    </div>
+    
+    <div class="queue">
+      <h3>📂 Categories</h3>
+      <div id="categoryList"><div class="empty">Đang tải...</div></div>
+    </div>
+  </div>
+  
+  <div id="configTab" class="tab-content">
+    <div class="config">
+      <h3>⚙️ Cài đặt</h3>
+      <div class="config-item">
+        <label>📁 Thư mục lưu (trong container):</label>
+        <input type="text" id="downloadPath" placeholder="/app/Volume/Download">
+      </div>
+      <div class="config-item">
+        <label>⏱️ Delay giữa mỗi lần tải (giây):</label>
+        <input type="number" id="delaySeconds" min="30" max="3600" placeholder="120">
+      </div>
+      <button id="saveConfigBtn" class="btn btn-secondary">💾 Lưu cài đặt</button>
+    </div>
+    
+    <div class="config">
+      <h3>📖 Hướng dẫn</h3>
+      <div style="font-size: 11px; color: #888; line-height: 1.4;">
+        <p>• Thư mục lưu: đường dẫn trong Docker container</p>
+        <p>• Delay: thời gian chờ giữa mỗi lần tải (tối thiểu 30s)</p>
+        <p>• File sẽ lưu tại: <code>XHS-Downloader/Volume/Download/</code></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

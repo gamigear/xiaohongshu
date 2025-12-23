@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  # XHS Downloader API (từ Docker Hub)
+  xhs-downloader:
+    image: joeanamier/xhs-downloader
+    container_name: xhs-downloader
+    ports:
+      - "5556:5556"
+    volumes:
+      - ./XHS-Downloader/Volume:/app/Volume
+    command: python main.py api
+    restart: unless-stopped
+
+  # Queue Server API
+  xhs-queue-server:
+    build: ./xhs-queue-server
+    container_name: xhs-queue-server
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./xhs-queue-server/.env
+    restart: unless-stopped
+
+  # Download Worker
+  xhs-worker:
+    build: ./xhs-queue-server
+    container_name: xhs-worker
+    env_file:
+      - ./xhs-queue-server/.env
+    environment:
+      - XHS_API_URL=http://xhs-downloader:5556/xhs/detail
+    command: python worker.py
+    depends_on:
+      - xhs-downloader
+      - xhs-queue-server
+    restart: unless-stopped

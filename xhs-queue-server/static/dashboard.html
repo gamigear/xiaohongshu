@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XHS Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            padding: 20px;
+        }
+        
+        .dashboard {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 107, 107, 0.2);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: #16213e;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .pending { color: #ffd93d; }
+        .done { color: #4ecdc4; }
+        .error { color: #ff6b6b; }
+        .categories { color: #74b9ff; }
+        
+        .recent {
+            background: #16213e;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .recent h3 {
+            color: #74b9ff;
+            margin-bottom: 15px;
+        }
+        
+        .recent-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .status-badge {
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 11px;
+            margin-right: 8px;
+        }
+        
+        .status-pending { background: rgba(255, 217, 61, 0.2); color: #ffd93d; }
+        .status-done { background: rgba(78, 205, 196, 0.2); color: #4ecdc4; }
+        .status-error { background: rgba(255, 107, 107, 0.2); color: #ff6b6b; }
+        
+        .actions {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            background: #ee5a5a;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>🔖 XHS Dashboard</h1>
+            <p>Tổng quan hệ thống tải xuống</p>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number pending" id="pendingCount">-</div>
+                <div>Đang chờ</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number done" id="doneCount">-</div>
+                <div>Hoàn thành</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number error" id="errorCount">-</div>
+                <div>Lỗi</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number categories" id="categoriesCount">-</div>
+                <div>Categories</div>
+            </div>
+        </div>
+        
+        <div class="recent">
+            <h3>📋 Hoạt động gần đây</h3>
+            <div id="recentItems">
+                <div class="loading">Đang tải...</div>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <a href="/" class="btn">🔧 Quản lý đầy đủ</a>
+            <button class="btn" onclick="location.reload()">🔄 Refresh</button>
+        </div>
+    </div>
+    
+    <script>
+        async function loadDashboard() {
+            try {
+                // Load queue data
+                const queueRes = await fetch('/api/queue');
+                const queueData = await queueRes.json();
+                
+                // Load categories
+                const catRes = await fetch('/api/categories');
+                const categories = await catRes.json();
+                
+                // Update stats
+                document.getElementById('pendingCount').textContent = queueData.stats.pending;
+                document.getElementById('doneCount').textContent = queueData.stats.done;
+                document.getElementById('errorCount').textContent = queueData.stats.error;
+                document.getElementById('categoriesCount').textContent = categories.length;
+                
+                // Show recent items
+                const recentItems = queueData.items.slice(0, 10);
+                const recentHTML = recentItems.map(item => {
+                    const statusText = {
+                        'pending': 'Đang chờ',
+                        'done': 'Hoàn thành', 
+                        'error': 'Lỗi'
+                    }[item.status] || item.status;
+                    
+                    return `
+                        <div class="recent-item">
+                            <span class="status-badge status-${item.status}">${statusText}</span>
+                            <strong>${item.title || 'Untitled'}</strong>
+                            <br>
+                            <small>📁 ${item.category || 'default'} • ${item.author || 'Unknown'}</small>
+                        </div>
+                    `;
+                }).join('');
+                
+                document.getElementById('recentItems').innerHTML = recentHTML || '<div style="color: #666;">Không có dữ liệu</div>';
+                
+            } catch (error) {
+                document.getElementById('recentItems').innerHTML = `<div style="color: #ff6b6b;">❌ Lỗi: ${error.message}</div>`;
+            }
+        }
+        
+        // Load on page load
+        loadDashboard();
+        
+        // Auto refresh every 30s
+        setInterval(loadDashboard, 30000);
+    </script>
+</body>
+</html>

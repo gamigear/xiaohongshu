@@ -4,7 +4,7 @@
   "version": "1.0",
   "description": "Thu thập link Xiaohongshu để tải sau",
   "permissions": ["activeTab", "storage"],
-  "host_permissions": ["http://localhost:8080/*"],
+  "host_permissions": ["https://xiaohongshu.vercel.app/*"],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
